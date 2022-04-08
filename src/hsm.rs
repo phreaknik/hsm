@@ -2,6 +2,7 @@ extern crate bitcoin;
 
 use crate::error::Error;
 use crate::policy::{Policy, PolicyID};
+use crate::signing::SignatureType;
 use bitcoin::util::bip32::ExtendedPrivKey;
 use core::option::Option;
 use core::slice::Iter;
@@ -79,10 +80,14 @@ impl Hsm {
         self.policies.iter()
     }
 
-    /// Request a signature for the provided PSBT. A signature will only be
+    /// Request a signature from the HSM. A signature will only be
     /// performed, if one or more policies approve the transaction.
-    pub fn sign(&self) -> Result<(), Error> {
-        Err(Error::Unimplemented)
+    pub fn sign(&self, sigtype: SignatureType) -> Result<(), Error> {
+        if self.iter_policies().any(|p| p.approves(&sigtype)) {
+            Ok(())
+        } else {
+            Err(Error::Unimplemented)
+        }
     }
 }
 

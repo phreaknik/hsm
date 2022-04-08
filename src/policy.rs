@@ -1,4 +1,9 @@
-pub struct Policy {}
+use crate::signing::SignatureType;
+
+pub struct Policy {
+    // Signature type this policy applies to
+    sigtype: SignatureType,
+}
 
 impl Policy {
     pub fn is_valid(&self) -> bool {
@@ -7,6 +12,10 @@ impl Policy {
 
     pub fn identifier(&self) -> PolicyID {
         PolicyID {}
+    }
+
+    pub fn approves(&self, sigtype: &SignatureType) -> bool {
+        false
     }
 }
 
