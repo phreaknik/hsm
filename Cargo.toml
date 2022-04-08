@@ -1,0 +1,8 @@
+[package]
+name = "psbt-hsm"
+version = "0.1.0"
+authors = ["wizkr <wizkr@example.com>"]
+license = "GPL-3.0"
+edition = "2018"
+
+[dependencies]
