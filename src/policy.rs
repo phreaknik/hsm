@@ -1,6 +1,8 @@
-pub mod error;
-pub mod hsm;
-pub mod policy;
+pub struct Policy {}
+
+pub struct PolicyID {}
+
+pub enum Constraint {}
 
 #[cfg(test)]
 mod tests {
