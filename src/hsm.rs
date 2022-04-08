@@ -2,11 +2,13 @@ extern crate bitcoin;
 
 use crate::error::Error;
 use crate::policy::{Policy, PolicyID};
+use bitcoin::util::bip32::ExtendedPrivKey;
+use core::option::Option;
 use core::slice::Iter;
 
 /// HSM context struct. Holds data necessary to evaluate and sign PSBTs
 pub struct Hsm {
-    seed: String,
+    xpriv: Option<ExtendedPrivKey>,
     policies: Vec<Policy>,
 }
 
@@ -14,23 +16,29 @@ impl Hsm {
     /// Create a new PsbtHsm instance.
     pub fn new() -> Hsm {
         Hsm {
-            seed: String::new(),
+            xpriv: None,
             policies: Vec::new(),
         }
     }
 
     pub fn has_seed(&self) -> bool {
-        false
+        self.xpriv.is_some()
     }
 
     /// Save a seed with which to sign transactions.
-    pub fn add_seed(&self) -> Result<(), Error> {
-        Err(Error::Unimplemented)
+    pub fn add_seed(&mut self, seed: &[u8]) -> Result<(), Error> {
+        let network = bitcoin::Network::Bitcoin;
+        if !self.has_seed() {
+            self.xpriv = Some(ExtendedPrivKey::new_master(network, seed)?);
+            Ok(())
+        } else {
+            Err(Error::KeySlotFull)
+        }
     }
 
     /// Delete the saved seed, if any.
-    pub fn del_seed(&self) -> Result<(), Error> {
-        Err(Error::Unimplemented)
+    pub fn del_seed(&mut self) {
+        self.xpriv = None
     }
 
     /// Add a new policy to the list of saved policies.
