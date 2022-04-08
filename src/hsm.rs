@@ -42,13 +42,36 @@ impl Hsm {
     }
 
     /// Add a new policy to the list of saved policies.
-    pub fn add_policy(&self, p: Policy) -> Result<(), Error> {
-        Err(Error::Unimplemented)
+    pub fn add_policy(&mut self, new: Policy) -> Result<(), Error> {
+        if !new.is_valid() {
+            Err(Error::InvalidPolicy)
+        } else if self.has_seed() {
+            Err(Error::NotAllowed(
+                "Cannot add a policy while seed is loaded.",
+            ))
+        } else if self
+            .iter_policies()
+            .any(|p| p.identifier() == new.identifier())
+        {
+            Err(Error::DuplicateEntry)
+        } else {
+            self.policies.push(new);
+            Ok(())
+        }
     }
 
     /// Delete the specified policy, if it exists.
-    pub fn del_policy(&self, p: PolicyID) -> Result<(), Error> {
-        Err(Error::Unimplemented)
+    pub fn del_policy(&mut self, id: PolicyID) -> Result<(), Error> {
+        if self.has_seed() {
+            Err(Error::NotAllowed(
+                "Cannot remove a policy while seed is loaded.",
+            ))
+        } else if let Some(idx) = self.iter_policies().position(|p| p.identifier() == id) {
+            self.policies.remove(idx);
+            Ok(())
+        } else {
+            Err(Error::NotFound)
+        }
     }
 
     /// Return an iterator over the saved policies.
