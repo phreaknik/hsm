@@ -3,9 +3,9 @@ use core::convert::From;
 use core::fmt;
 
 // See fmt::Display implementation for descriptions of each error variant.
-pub enum Error<'a> {
+pub enum Error {
     Bip32(bip32::Error),
-    NotAllowed(&'a str),
+    NoPrivKey,
     NotFound,
     DuplicateEntry,
     InvalidPolicy,
@@ -13,11 +13,11 @@ pub enum Error<'a> {
     Unimplemented,
 }
 
-impl fmt::Display for Error<'_> {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Error::Bip32(ref e) => fmt::Display::fmt(e, f),
-            Error::NotAllowed(r) => f.write_str(&format!("Not allowed: {}", r)),
+            Error::NoPrivKey => f.write_str("No private key!"),
             Error::NotFound => f.write_str("Entry was not found."),
             Error::DuplicateEntry => f.write_str("Entry already exists and may not be duplicated."),
             Error::InvalidPolicy => f.write_str("Policy is not valid."),
@@ -27,7 +27,7 @@ impl fmt::Display for Error<'_> {
     }
 }
 
-impl From<bip32::Error> for Error<'_> {
+impl From<bip32::Error> for Error {
     fn from(e: bip32::Error) -> Self {
         Error::Bip32(e)
     }
