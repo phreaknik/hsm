@@ -1,8 +1,8 @@
 extern crate bitcoin;
 
 use crate::error::Error;
-use crate::policy::{Policy, PolicyID};
-use crate::signing::SignatureType;
+use crate::policy::{Policy, PolicyUID};
+use crate::signing::SigRequest;
 use bitcoin::util::bip32::ExtendedPrivKey;
 use core::option::Option;
 use core::slice::Iter;
@@ -56,9 +56,7 @@ impl Unsealed {
 
     /// Add a new policy to the list of saved policies.
     pub fn load_policy(&mut self, new: Policy) -> Result<(), Error> {
-        if !new.is_valid() {
-            Err(Error::InvalidPolicy)
-        } else if self
+        if self
             .0
             .policies
             .iter()
@@ -72,7 +70,7 @@ impl Unsealed {
     }
 
     /// Delete the specified policy, if it exists.
-    pub fn delete_policy(&mut self, id: PolicyID) -> Result<(), Error> {
+    pub fn delete_policy(&mut self, id: PolicyUID) -> Result<(), Error> {
         if let Some(idx) = self.0.policies.iter().position(|p| p.identifier() == id) {
             self.0.policies.remove(idx);
             Ok(())
@@ -106,8 +104,8 @@ impl Unsealed {
 impl Sealed {
     /// Request a signature from the HSM. A signature will only be
     /// performed, if one or more policies approve the transaction.
-    pub fn sign(&self, sigtype: SignatureType) -> Result<(), Error> {
-        if self.0.policies.iter().any(|p| p.approves(&sigtype)) {
+    pub fn sign(&self, request: SigRequest) -> Result<(), Error> {
+        if self.0.policies.iter().any(|p| p.approves(&request)) {
             Ok(())
         } else {
             Err(Error::Unimplemented)
