@@ -1,28 +1,39 @@
-use crate::signing::SignatureType;
+use crate::error::Error;
+use crate::signing::{SigRequest, SigType};
+use microlisp::{Environment, Expression};
+use serde::{Deserialize, Serialize};
 
+pub type PolicyUID = blake3::Hash;
+
+#[derive(Deserialize, Serialize)]
 pub struct Policy {
-    // Signature type this policy applies to
-    sigtype: SignatureType,
+    sigtype: SigType,
+    script: String,
 }
 
 impl Policy {
-    pub fn is_valid(&self) -> bool {
-        false // Unimplemented for now
+    pub fn new(sigtype: SigType, script: String) -> Result<Policy, Error> {
+        Ok(Policy { sigtype, script })
     }
 
-    pub fn identifier(&self) -> PolicyID {
-        PolicyID {}
+    pub fn identifier(&self) -> PolicyUID {
+        blake3::hash(&bincode::serialize(self).unwrap())
     }
 
-    pub fn approves(&self, sigtype: &SignatureType) -> bool {
-        false
+    pub fn approves(&self, request: &SigRequest) -> bool {
+        if self.sigtype == request.sigtype() {
+            let mut env = Environment::new();
+            env.load_default_builtins().unwrap();
+            let script = self.script.parse().unwrap();
+            match request {
+                SigRequest::Psbt(_) => Ok(Expression::Bool(true)) == env.eval(script),
+                SigRequest::Message(_) => Ok(Expression::Bool(true)) == env.eval(script),
+            }
+        } else {
+            false
+        }
     }
 }
-
-#[derive(PartialEq)]
-pub struct PolicyID {}
-
-pub enum Constraint {}
 
 #[cfg(test)]
 mod tests {
