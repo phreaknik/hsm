@@ -1,4 +1,3 @@
-pub mod error;
 pub mod hsm;
 pub mod policy;
 pub mod signing;
