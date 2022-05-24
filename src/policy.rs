@@ -1,4 +1,3 @@
-use crate::error::Error;
 use crate::signing::{SigRequest, SigType};
 use microlisp::{Environment, Expression};
 use serde::{Deserialize, Serialize};
@@ -12,8 +11,8 @@ pub struct Policy {
 }
 
 impl Policy {
-    pub fn new(sigtype: SigType, script: String) -> Result<Policy, Error> {
-        Ok(Policy { sigtype, script })
+    pub fn new(sigtype: SigType, script: String) -> Policy {
+        Policy { sigtype, script }
     }
 
     pub fn identifier(&self) -> PolicyUID {
