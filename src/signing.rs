@@ -1,14 +1,16 @@
-use bitcoin::util::psbt::PartiallySignedTransaction;
+use bitcoin::util::psbt::PartiallySignedTransaction as Psbt;
 use serde::{Deserialize, Serialize};
 
+/// Types of signatures that can be performed
 #[derive(PartialEq, Deserialize, Serialize)]
 pub enum SigType {
     Psbt,
     Message,
 }
 
+/// Request for signature
 pub enum SigRequest {
-    Psbt(PartiallySignedTransaction),
+    Psbt(Psbt),
     Message(String),
 }
 
@@ -19,6 +21,12 @@ impl SigRequest {
             SigRequest::Message(_) => SigType::Message,
         }
     }
+}
+
+/// Witness data output from the signing process
+pub enum SignedData {
+    Psbt(Psbt),
+    Message(String),
 }
 
 #[cfg(test)]
